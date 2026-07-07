@@ -40,6 +40,22 @@ jobs:
           draft: true
           prerelease: false
 
+  get-msrv:
+    name: Get declared MSRV from Cargo.toml
+    runs-on: ubuntu-latest
+    outputs:
+      msrv: ${{ steps.get_msrv.outputs.msrv }}
+    steps:
+      - name: Install ripgrep
+        run: sudo apt-get install -y ripgrep
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Get MSRV
+        id: get_msrv
+        run: rg '^\s*rust-version\s*=\s*"(\d+(\.\d+){0,2})"' --replace 'msrv=$1' Cargo.toml >> "$GITHUB_OUTPUT"
+
   build-release:
     name: build-release
     needs: create-release
@@ -59,9 +75,9 @@ jobs:
           - linux-armv7-musleabihf
           - linux-x64-gnu
           - linux-x64-musl
-          - macos-aarch64
-          - macos-x64
           - windows-x64-msvc
+          # - macos-aarch64
+          # - macos-x64
         rust:
           - stable
 #         - ${{ needs.get-msrv.outputs.msrv }}
